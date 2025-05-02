@@ -1,6 +1,5 @@
 package org.example.util;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -12,19 +11,17 @@ public class JdbcUtil {
     private static final String PASS;
 
     static {
-        Properties p = new Properties();
-        try (InputStream in = JdbcUtil.class.getResourceAsStream("/db.properties")) {
-            if (in == null) throw new RuntimeException("db.properties missing!");
-            p.load(in);
-        } catch (IOException e) {
-            throw new ExceptionInInitializerError(e);
-        }
-        URL  = p.getProperty("jdbc.url");
-        USER = p.getProperty("jdbc.user");
-        PASS = p.getProperty("jdbc.password");
         try {
+            Properties p = new Properties();
+            try (InputStream in = JdbcUtil.class.getResourceAsStream("/db.properties")) {
+                if (in == null) throw new RuntimeException("db.properties not found");
+                p.load(in);
+            }
+            URL  = p.getProperty("jdbc.url");
+            USER = p.getProperty("jdbc.user");
+            PASS = p.getProperty("jdbc.password");
             Class.forName("org.postgresql.Driver");
-        } catch (ClassNotFoundException e) {
+        } catch (Exception e) {
             throw new ExceptionInInitializerError(e);
         }
     }
