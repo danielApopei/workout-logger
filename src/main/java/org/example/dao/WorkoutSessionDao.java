@@ -3,8 +3,10 @@ package org.example.dao;
 import org.example.model.WorkoutSession;
 import org.example.util.JdbcUtil;
 
-import java.sql.*;
-import java.time.LocalDateTime;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +17,7 @@ public class WorkoutSessionDao {
         try (Connection c = JdbcUtil.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, userId);
-            ResultSet rs = ps.executeQuery();
+            var rs = ps.executeQuery();
             List<WorkoutSession> list = new ArrayList<>();
             while (rs.next()) {
                 WorkoutSession s = new WorkoutSession(
@@ -32,25 +34,41 @@ public class WorkoutSessionDao {
 
     public WorkoutSession insert(WorkoutSession s) throws Exception {
         String sql = """
-      INSERT INTO workout_session(user_id,session_date,notes)
-      VALUES(?,?,?) RETURNING id
-      """;
+          INSERT INTO workout_session(user_id,session_date,notes)
+          VALUES(?,?,?) RETURNING id
+          """;
         try (Connection c = JdbcUtil.getConnection();
              PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, s.getUserId());
             ps.setTimestamp(2, Timestamp.valueOf(s.getSessionDate()));
             ps.setString(3, s.getNotes());
-            ResultSet rs = ps.executeQuery();
+            var rs = ps.executeQuery();
             rs.next();
             s.setId(rs.getInt(1));
             return s;
         }
     }
 
-    public void delete(int sessionId) throws Exception {
+    public WorkoutSession update(WorkoutSession s) throws Exception {
+        String sql = """
+          UPDATE workout_session
+             SET session_date = ?, notes = ?
+           WHERE id = ?
+          """;
         try (Connection c = JdbcUtil.getConnection();
-             PreparedStatement ps = c.prepareStatement(
-                     "DELETE FROM workout_session WHERE id=?")) {
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setTimestamp(1, Timestamp.valueOf(s.getSessionDate()));
+            ps.setString(2, s.getNotes());
+            ps.setInt(3, s.getId());
+            ps.executeUpdate();
+            return s;
+        }
+    }
+
+    public void delete(int sessionId) throws Exception {
+        String sql = "DELETE FROM workout_session WHERE id=?";
+        try (Connection c = JdbcUtil.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setInt(1, sessionId);
             ps.executeUpdate();
         }
