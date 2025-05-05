@@ -18,9 +18,6 @@ public class DaoTest {
                 new WorkoutSession(1, LocalDateTime.now(), "Test session"));
         System.out.println("Session ID=" + s.getId());
 
-        eeDao.insert(new ExerciseEntry(s.getId(), ExerciseType.SQUATS, 30, 8, 3, null));
-        eeDao.insert(new ExerciseEntry(s.getId(), ExerciseType.RUNNING, 0, 0, 0, 300));
-
         List<ExerciseEntry> list = eeDao.findBySession(s.getId());
         list.forEach(e -> System.out.println(e.getType() +
                 " sets=" + e.getSets() +
